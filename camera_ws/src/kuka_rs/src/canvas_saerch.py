@@ -20,7 +20,7 @@ def findGreatesContour(contours):
 
 
 #if __name__ == '__main__':
-def canvas_find(rgb_arr)
+def canvas_find(rgb_arr):
     hsv_min = np.array((7, 0, 183), np.uint8)
     hsv_max = np.array((85, 38, 212), np.uint8)
     #fn = '42.jpg' #
