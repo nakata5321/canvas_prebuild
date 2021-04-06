@@ -1,0 +1,8 @@
+prefix=/home/nakata/realsense_examples/canvas_searching/camera_ws/install
+
+Name: kuka_rs
+Description: Description of kuka_rs
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

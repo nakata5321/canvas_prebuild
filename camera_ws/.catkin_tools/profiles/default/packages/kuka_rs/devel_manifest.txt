@@ -1,0 +1,5 @@
+kuka_rs
+/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/cmake.lock /home/nakata/realsense_examples/canvas_searching/camera_ws/devel/./cmake.lock
+/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/lib/pkgconfig/kuka_rs.pc /home/nakata/realsense_examples/canvas_searching/camera_ws/devel/lib/pkgconfig/kuka_rs.pc
+/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/share/kuka_rs/cmake/kuka_rsConfig-version.cmake /home/nakata/realsense_examples/canvas_searching/camera_ws/devel/share/kuka_rs/cmake/kuka_rsConfig-version.cmake
+/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/share/kuka_rs/cmake/kuka_rsConfig.cmake /home/nakata/realsense_examples/canvas_searching/camera_ws/devel/share/kuka_rs/cmake/kuka_rsConfig.cmake
