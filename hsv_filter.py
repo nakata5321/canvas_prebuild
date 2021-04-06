@@ -10,7 +10,7 @@ if __name__ == '__main__':
 cv2.namedWindow( "result" ) #
 cv2.namedWindow( "settings" ) #
 
-fn = '21_Color.png' #
+fn = '41.jpg' #
 
 #
 cv2.createTrackbar('h1', 'settings', 0, 255, nothing)

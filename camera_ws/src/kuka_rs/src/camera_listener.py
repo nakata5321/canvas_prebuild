@@ -23,13 +23,14 @@ def RGB_pic(point_arr):
 def callback(data):
     global sub
     pc = ros_numpy.numpify(data)
-    x = pc[0, 0]
-    print(len(x))
-    print(x.shape)
-    print(x)
-    print(x[3])
-    print(pc.shape)
-    print(pc.shape[0])
+    np.save("np_arr", pc)
+    #x = pc[0, 0]
+    #print(len(x))
+    #print(x.shape)
+    #print(x)
+    #print(x[3])
+    #print(pc.shape)
+    #print(pc.shape[0])
     #print(pc[0])
     #print(pc1.dtype_list)
     #pc = pypcd.PointCloud.from_msg(data)
@@ -52,7 +53,9 @@ def callback(data):
     #print(new_rgb.shape)
 
     #Displayed the image
-    cv.imwrite('41.jpg', pic) 
+    cv.imwrite('42.jpg', pic)
+    hsv = cv.cvtColor( pic, cv.COLOR_BGR2HSV )
+    cv.imshow('hsv image', hsv)
     cv.imshow("WindowNameHere", pic)
     cv.waitKey(0)
 

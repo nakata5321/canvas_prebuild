@@ -18,12 +18,14 @@ def findGreatesContour(contours):
 
     return largest_area, largest_contour_index
 
-hsv_min = np.array((13, 0, 160), np.uint8)
-hsv_max = np.array((99, 36, 196), np.uint8)
 
-if __name__ == '__main__':
-    fn = '21_Color.png' #
-    img = cv.imread(fn)
+#if __name__ == '__main__':
+def canvas_find(rgb_arr)
+    hsv_min = np.array((7, 0, 183), np.uint8)
+    hsv_max = np.array((85, 38, 212), np.uint8)
+    #fn = '42.jpg' #
+    #img = cv.imread(fn)
+    img = rgb_arr
     cv.imshow('Original image',img)
     print(img.dtype)
     print(img.shape)
@@ -65,3 +67,4 @@ if __name__ == '__main__':
     cv.imshow('contours', img) #
     cv.waitKey(0)
     cv.destroyAllWindows()
+    return(rect, box)
