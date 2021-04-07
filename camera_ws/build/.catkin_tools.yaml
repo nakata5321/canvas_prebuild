@@ -1,6 +1,0 @@
-devel_space: /home/nakata/realsense_examples/canvas_searching/camera_ws/devel
-install: false
-install_space: /home/nakata/realsense_examples/canvas_searching/camera_ws/install
-profile: default
-source_space: /home/nakata/realsense_examples/canvas_searching/camera_ws/src
-workspace: /home/nakata/realsense_examples/canvas_searching/camera_ws

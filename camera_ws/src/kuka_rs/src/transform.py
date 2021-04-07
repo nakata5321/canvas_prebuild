@@ -5,5 +5,4 @@ def binary(num):
     integers = [ord(c) for c in packed]
     return integers
 
-def equat_line(point1, point2):
-    
+#def equat_line(point1, point2):

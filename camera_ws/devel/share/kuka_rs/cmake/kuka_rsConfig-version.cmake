@@ -1,1 +1,0 @@
-/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/share/kuka_rs/cmake/kuka_rsConfig-version.cmake

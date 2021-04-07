@@ -1,1 +1,0 @@
-/home/nakata/realsense_examples/canvas_searching/camera_ws/devel/.private/kuka_rs/lib/pkgconfig/kuka_rs.pc

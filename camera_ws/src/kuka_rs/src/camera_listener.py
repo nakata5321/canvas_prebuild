@@ -10,7 +10,21 @@ from transform  import binary
 import cv2 as cv
 from canvas_saerch import findGreatesContour, canvas_find
 
-global sub
+import tf
+import tf2_ros as tf2
+from geometry_msgs.msg import TransformStamped
+from geometry_msgs.msg import Quaternion, Vector3
+
+from math0 import rpy_and_quat_from_xyz
+
+from kuka_rs.msg import Pose
+from kuka_rs.srv import RequestCanvas, RequestCanvasResponse
+
+global sub, transform_stamp, res
+
+transform_stamp = TransformStamped()
+res = RequestCanvasResponse()
+tfBuffer = tf2.Buffer()
 
 def RGB_pic(point_arr):
     rgb_arr = np.zeros((480,848,3), np.int32)
@@ -69,10 +83,16 @@ def width_height(xyz_data):
         width = h2
     return(width, height)
 
+def convert_frame(xyz):
+    new_xyz = np.zeros((4,3))
+    new_xyz[:,0] = xyz[:,1]*(-1)
+    new_xyz[:,1] = xyz[:,0]*(-1)
+    new_xyz[:,2] = xyz[:,2]*(-1)
+    return(new_xyz)
 
 #TODO kD tree for search all points in rectangle
 def callback(data):
-
+    global transform_stamp
     '''
     global sub
     pc = ros_numpy.numpify(data)
@@ -121,8 +141,10 @@ def callback(data):
     rect, box = canvas_find(pic)
 
     center = np.int0(rect[0])
-    print(center
-    )    
+    print(center)
+    print(center[1])
+    xyz_center = data[int(center[1]), int(center[0])]
+    print(xyz_center)
     print(rect)
     #print(box)
     #print(box[0][0])
@@ -131,23 +153,62 @@ def callback(data):
     print(points)
     xyz = XYZ_points(points)
     print(xyz)
+
+    new_xyz = convert_frame(xyz)
+
+    rpy, q = rpy_and_quat_from_xyz(new_xyz)
+    print(q)
     w, h = width_height(xyz)
     print(w, h)
 
     cv.imshow("WindowNameHere", pic)
     cv.waitKey(0)
 
+
+    trans = tfBuffer.lookup_transform("base_link", "holder_link", rospy.Time(), rospy.Duration(3))
+    holder_quat = Quaternion(trans.transform.rotation)
+    holder_trans = Vector3(trans.transform.translation)
+    holder_rot = tf.transformations.euler_matrix(rpy)
+    cam_trans = Vector3(-xyz_center[1], -xyz_center[0], -xyz_center[2])
+    new_tran = holder_trans + holder_rot*cam_trans
+
+    #TODO tramsform
+
+
+    transform_stamp.header.frame_id = "base_link"
+    transform_stamp.header.child_frame_id = "canvas_link"
+    transform_stamp.transform.translation.x = new_tran[0]
+    transform_stamp.transform.translation.y = new_tran[1]
+    transform_stamp.transform.translation.z = new_tran[2]
+    transform_stamp.transform.rotation.x = q[0]
+    transform_stamp.transform.rotation.y = q[1]
+    transform_stamp.transform.rotation.z = q[2]
+    transform_stamp.transform.rotation.w = q[3]
+
+    res.p.x = xyz_center[0]
+    res.p.y = xyz_center[1]
+    res.p.z = xyz_center[2]
+    res.p.phi = rpy[0]
+    res.p.theta = rpy[0]
+    res.p.psi = rpy[0]
+    res.width = w
+    res.height = h
 #    h,w = pic.shape[0], pic.shape[1]
 #    vis2 = cv.cvtColor(pic)
 #    cv.imshow('rgb image', vis2)
 
 
-
+'''
 def listener():
     global sub
     rospy.init_node('rs_camera', anonymous=True)
     sub = rospy.Subscriber("/camera/depth/color/points", PointCloud2, callback)
     rospy.spin()
+'''
+
+def canvasCallback(req):
+    global res
+    return(res)
 
 if __name__ == '__main__':
     '''
@@ -156,3 +217,16 @@ if __name__ == '__main__':
     data = np.load("np_arr.npy")
     print(data.shape)
     callback(data)
+
+    global sub
+    rospy.init_node('rs_camera', anonymous=True)
+
+    broadcaster = tf2.StaticTransformBroadcaster()
+    rate = rospy.Rate(10)
+    canvas_server = rospy.Service('request_canvas', RequestCanvas, canvasCallback)
+
+    sub = rospy.Subscriber("/camera/depth/color/points", PointCloud2, callback)
+    while not rospy.is_shutdown():
+        transform_stamp.header.stamp = rospy.get_rostime()
+        broadcaster.sendTransform(transform_stamp)
+        rate.sleep()
