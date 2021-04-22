@@ -93,11 +93,11 @@ def convert_frame(xyz):
 #TODO kD tree for search all points in rectangle
 def callback(data):
     global transform_stamp
-    '''
+
     global sub
-    pc = ros_numpy.numpify(data)
-    np.save("np_arr", pc)
-    '''
+    #pc = ros_numpy.numpify(data)
+    #np.save("np_arr", pc)
+
 
 
     #x = pc[0, 0]
@@ -115,11 +115,9 @@ def callback(data):
     #print(pc.fields)
     #pc.save('foo.pcd')
 
-    '''
-    sub.unregister()
-    print("done")
-    pic = RGB_pic(pc)
-    '''
+    #sub.unregister()
+    #print("done")
+    #pic = RGB_pic(pc)
 
     pic = RGB_pic(data)
 
