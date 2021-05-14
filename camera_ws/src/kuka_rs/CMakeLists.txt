@@ -8,12 +8,12 @@ project(kuka_rs)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  ros_numpy
   rospy
   sensor_msgs
   std_msgs
   message_generation
   geometry_msgs
+  tf2
   tf2_ros
 )
 

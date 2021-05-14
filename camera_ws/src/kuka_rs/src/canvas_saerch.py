@@ -68,3 +68,12 @@ def canvas_find(rgb_arr):
     cv.waitKey(0)
     cv.destroyAllWindows()
     return(rect, box)
+    '''
+if __name__ == '__main__':
+    fn = '14.jpg' #
+    img = cv.imread(fn)
+
+    rect, box = canvas_find(img)
+    print(fn)
+    print(rect[2])
+    '''
