@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from math import sqrt
+import math
 import rospy
 import numpy as np
 #import pypcd
@@ -13,7 +13,7 @@ from canvas_saerch import findGreatesContour, canvas_find
 import tf
 import tf2_ros as tf2
 from geometry_msgs.msg import TransformStamped
-from geometry_msgs.msg import Quaternion, Vector3
+#from geometry_msgs.msg import Quaternion, Vector3
 import rospkg
 
 from math0 import rpy_and_quat_from_xyz
@@ -74,8 +74,8 @@ def XYZ_points(points):
     return(xyz)
 
 def width_height(xyz_data):
-    h1 = sqrt((xyz_data[1][0] - xyz_data[0][0])**2 + (xyz_data[1][1] - xyz_data[0][1])**2)
-    h2 = sqrt((xyz_data[2][0] - xyz_data[1][0])**2 + (xyz_data[2][1] - xyz_data[1][1])**2)
+    h1 = math.sqrt((xyz_data[1][0] - xyz_data[0][0])**2 + (xyz_data[1][1] - xyz_data[0][1])**2)
+    h2 = math.sqrt((xyz_data[2][0] - xyz_data[1][0])**2 + (xyz_data[2][1] - xyz_data[1][1])**2)
     if(h2 > h1):
         height = h2
         width = h1
@@ -83,6 +83,7 @@ def width_height(xyz_data):
         height = h1
         width = h2
     return(width, height)
+
 '''
 def convert_frame(xyz):
     new_xyz = np.zeros((4,3))
@@ -90,7 +91,7 @@ def convert_frame(xyz):
     new_xyz[:,1] = xyz[:,0]*(-1)
     new_xyz[:,2] = xyz[:,2]*(-1)
     return(new_xyz)
-'''
+
 def convert_frame(xyz):
     new_xyz = np.array([[0, 0, 0]]).T
     trans = tfBuffer.lookup_transform("base_link", "camera_link", rospy.Time(0), rospy.Duration(3))
@@ -106,8 +107,38 @@ def convert_frame(xyz):
     camera_rot = np.asarray(tf.transformations.quaternion_matrix(camera_quat))
 
     new_xyz = np.dot(camera_rot, xyz) + camera_trans
+    return(new_xyz)
+'''
+def convert_frame(xyz):
+    new_xyz = np.array([[0, 0, 0]]).T
+    trans = tfBuffer.lookup_transform("base_link", "camera_link", rospy.Time(0), rospy.Duration(3))
+    print(trans)
+    camera_quat = np.asarray([trans.transform.rotation.x,
+        trans.transform.rotation.y,
+        trans.transform.rotation.z,
+        trans.transform.rotation.w])
+    print(camera_quat)
+    print(type(camera_quat))
+    camera_trans = np.array([[trans.transform.translation.x,
+        trans.transform.translation.y,
+        trans.transform.translation.z]]).T
+    print(camera_trans)
+    print(camera_trans.shape)
+    #quat = np.array([camera_quat.x, camera_quat.y, camera_quat.z, camera_quat.w])
+    #print(quat)
+    camera_rot = np.asarray(tf.transformations.quaternion_matrix(camera_quat))
+    print(camera_rot)
+    camera_rot = camera_rot[0:3, 0:3]
+    print(camera_rot)
+    print(camera_rot.shape)
+    print(xyz.shape)
+    new_xyz = np.dot(camera_rot, xyz) + camera_trans
+    new_xyz[2, 0] = new_xyz[2, 0] + 0.22
+    print("new_xyz")
+    print(new_xyz)
 
     return(new_xyz)
+
 #TODO kD tree for search all points in rectangle
 def callback(data):
     global transform_stamp
@@ -153,7 +184,7 @@ def callback(data):
     #cv.imwrite('42.jpg', pic)
     #hsv = cv.cvtColor( pic, cv.COLOR_BGR2HSV )
     #cv.imshow('hsv image', hsv)
-    rect, box = canvas_find(pic)
+    rect, box, angle = canvas_find(pic)
     print("rect info")
     print(rect[0])
     print(rect[1])
@@ -214,7 +245,7 @@ def callback(data):
     res.p.z = new_xyz_center[2]
     res.p.phi = 0 #rpy[0]
     res.p.theta = 0 #rpy[0]
-    res.p.psi = 0 #rpy[0]
+    res.p.psi = angle #rpy[0]
     res.width = w
     res.height = h
 #    h,w = pic.shape[0], pic.shape[1]
@@ -240,6 +271,7 @@ if __name__ == '__main__':
     '''
     rospy.init_node('rs_camera', anonymous=True)
     tfBuffer = tf2.Buffer()
+    listener = tf2.TransformListener(tfBuffer)
     rospack = rospkg.RosPack()
     dirname = rospack.get_path("kuka_rs")
     data = np.load(dirname + "/src/np_arr.npy")

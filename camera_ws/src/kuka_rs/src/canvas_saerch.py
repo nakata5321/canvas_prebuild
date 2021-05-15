@@ -18,6 +18,18 @@ def findGreatesContour(contours):
 
     return largest_area, largest_contour_index
 
+def find_angle(box):
+    edge1 = np.int0((box[1][0] - box[0][0],box[1][1] - box[0][1]))
+    edge2 = np.int0((box[2][0] - box[1][0], box[2][1] - box[1][1]))
+
+    usedEdge = edge1
+    if cv.norm(edge2) > cv.norm(edge1):
+        usedEdge = edge2
+    reference = (1,0)
+
+    angle = math.acos((reference[0]*usedEdge[0] + reference[1]*usedEdge[1]) / (cv.norm(reference) *cv.norm(usedEdge)))
+    return(angle)
+
 
 #if __name__ == '__main__':
 def canvas_find(rgb_arr):
@@ -61,13 +73,18 @@ def canvas_find(rgb_arr):
     #print(len(contours))
     rect = cv.minAreaRect(lar_con) #
     box = cv.boxPoints(rect) #
+    angle = find_angle(box)
     box = np.int0(box)
     cv.drawContours(img,[box],0,(255,0,0),2) #
+
+    cv.circle(img, center, 5, color_yellow, 2) #
+    cv.putText(img, "%d" % int(angle * 180.0/math.pi * ), (center[0]+20, center[1]-20),
+        cv.FONT_HERSHEY_SIMPLEX, 1, color_yellow, 2)
 
     cv.imshow('contours', img) #
     cv.waitKey(0)
     cv.destroyAllWindows()
-    return(rect, box)
+    return(rect, box, angle)
     '''
 if __name__ == '__main__':
     fn = '14.jpg' #
