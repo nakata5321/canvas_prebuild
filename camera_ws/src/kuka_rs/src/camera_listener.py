@@ -245,9 +245,10 @@ def callback(data):
     res.p.z = new_xyz_center[2]
     res.p.phi = 0 #rpy[0]
     res.p.theta = 0 #rpy[0]
-    res.p.psi = angle #rpy[0]
+    res.p.psi = angle + 1.57 #rpy[0]
     res.width = w
     res.height = h
+    sub.unregister()
 #    h,w = pic.shape[0], pic.shape[1]
 #    vis2 = cv.cvtColor(pic)
 #    cv.imshow('rgb image', vis2)
@@ -257,7 +258,6 @@ def callback(data):
 def listener():
     global sub
     rospy.init_node('rs_camera', anonymous=True)
-    sub = rospy.Subscriber("/camera/depth/color/points", PointCloud2, callback)
     rospy.spin()
 '''
 
@@ -269,21 +269,23 @@ if __name__ == '__main__':
     '''
     listener()
     '''
+    global sub
     rospy.init_node('rs_camera', anonymous=True)
+    rospy.loginfo("node is up")
     tfBuffer = tf2.Buffer()
     listener = tf2.TransformListener(tfBuffer)
-    rospack = rospkg.RosPack()
-    dirname = rospack.get_path("kuka_rs")
-    data = np.load(dirname + "/src/np_arr.npy")
-    print(data.shape)
-    callback(data)
+    #rospack = rospkg.RosPack()
+    #dirname = rospack.get_path("kuka_rs")
+    #data = np.load(dirname + "/src/np_arr.npy")
+    sub = rospy.Subscriber("/camera/depth/color/points", PointCloud2, callback)
+    #print(data.shape)
+    #callback(data)
 
-    global sub
 
     broadcaster = tf2.StaticTransformBroadcaster()
     rate = rospy.Rate(10)
     canvas_server = rospy.Service('request_canvas', RequestCanvas, canvasCallback)
-
+    rospy.loginfo("publish")
     #sub = rospy.Subscriber("/camera/depth/color/points", PointCloud2, callback)
     while not rospy.is_shutdown():
         transform_stamp.header.stamp = rospy.get_rostime()

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import math
 import sys
 import numpy as np
 import cv2 as cv
@@ -59,7 +60,7 @@ def canvas_find(rgb_arr):
     #thresh = cv.inRange( hsv, hsv_min, hsv_max ) #
 
 
-    contours, hierarchy = cv.findContours( thresh.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv.findContours( thresh.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
     largest_area, largest_contour_index = findGreatesContour(contours)
     lar_con = contours[largest_contour_index]
@@ -76,10 +77,11 @@ def canvas_find(rgb_arr):
     angle = find_angle(box)
     box = np.int0(box)
     cv.drawContours(img,[box],0,(255,0,0),2) #
+    center = (int(rect[0][0]), int(rect[0][1]))
 
-    cv.circle(img, center, 5, color_yellow, 2) #
-    cv.putText(img, "%d" % int(angle * 180.0/math.pi * ), (center[0]+20, center[1]-20),
-        cv.FONT_HERSHEY_SIMPLEX, 1, color_yellow, 2)
+    cv.circle(img, center, 5, (0,255,255), 2) #
+    cv.putText(img, "%d" % int(angle * 180.0/math.pi), (center[0]+20, center[1]-20),
+        cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,255), 2)
 
     cv.imshow('contours', img) #
     cv.waitKey(0)
