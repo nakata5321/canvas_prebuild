@@ -5,7 +5,7 @@ import rospy
 import numpy as np
 #import pypcd
 from sensor_msgs.msg import PointCloud2
-#import ros_numpy
+import ros_numpy
 from transform  import binary
 import cv2 as cv
 from canvas_saerch import findGreatesContour, canvas_find
@@ -16,7 +16,7 @@ from geometry_msgs.msg import TransformStamped
 #from geometry_msgs.msg import Quaternion, Vector3
 import rospkg
 
-from math0 import rpy_and_quat_from_xyz
+#from math0 import rpy_and_quat_from_xyz
 
 from kuka_rs.msg import Pose
 from kuka_rs.srv import RequestCanvas, RequestCanvasResponse
@@ -38,6 +38,7 @@ def RGB_pic(point_arr):
     return(rgb_arr)
 
 # points start from left top and go clockwise
+'''
 def sort_points(arr):    #TODO check parallel
     points = np.zeros((4,2))
     min_x = 10000
@@ -47,25 +48,70 @@ def sort_points(arr):    #TODO check parallel
     for i in range(arr.shape[0]):
         if arr[i][0] > max_x:
             max_x = arr[i][0]
-            points[2] = arr[i]
         if arr[i][0] < min_x:
             min_x = arr[i][0]
-            points[0] = arr[i]
         if arr[i][1] > max_y:
             max_y = arr[i][1]
-            points[3] = arr[i]
         if arr[i][1] < min_y:
-            min_y = arr[i][1]
+            min_y = arr[i][1 ]
+
+    for i in range(arr.shape[0]):
+        if arr[i][0] == max_x:
+            #max_x = arr[i][0]
+            points[2] = arr[i]
+        if arr[i][0] == min_x:
+            #min_x = arr[i][0]
+            points[0] = arr[i]
+        if arr[i][1] == max_y:
+            #max_y = arr[i][1]
+            points[3] = arr[i]
+        if arr[i][1] == min_y:
+            min_y = arr[i][0]
             points[1] = arr[i]
+
+    return(points)
+'''
+def sort_points_z(arr):    #TODO check parallel
+    points = np.zeros((4,2))
+    min_x = 10000
+    min_y = 10000
+    max_x = 0
+    max_y = 0
+    for i in range(arr.shape[0]):
+        if arr[i][0][0] > max_x:
+            max_x = arr[i][0][0]
+        if arr[i][0][0] < min_x:
+            min_x = arr[i][0][0]
+        if arr[i][0][1] > max_y:
+            max_y = arr[i][0][1]
+        if arr[i][0][1] < min_y:
+            min_y = arr[i][0][1]
+
+    for i in range(arr.shape[0]):
+        if arr[i][0][0] == max_x:
+            #max_x = arr[i][0]
+            points[2] = arr[i][0]
+        if arr[i][0][0] == min_x:
+            #min_x = arr[i][0]
+            points[0] = arr[i][0]
+        if arr[i][0][1] == max_y:
+            #max_y = arr[i][1]
+            points[3] = arr[i][0]
+        if arr[i][0][1] == min_y:
+            #min_y = arr[i][0]
+            points[1] = arr[i][0]
+
     return(points)
 
 #TODO solve problem with [0, 0, 0, 0] point
-def XYZ_points(points):
+def XYZ_points(pc, points):
     xyz = np.zeros((4,3))
     for i in range(len(points)):
-        xyz_data = data[int(points[i][1]), int(points[i][0])]
-        if(xyz_data[2] == 0):
-            xyz_data = data[int(points[i][1]), int(points[i][0] - 5)]
+        print("get xyz point")
+        xyz_data = pc[int(points[i][1]), int(points[i][0])]
+        print(xyz_data)
+        #if(xyz_data[2] == 0):
+            #xyz_data = pc[int(points[i][1]), int(points[i][0])]
         print(int(points[i][1]))
         xyz[i][0] = xyz_data[0]
         xyz[i][1] = xyz_data[1]
@@ -74,8 +120,8 @@ def XYZ_points(points):
     return(xyz)
 
 def width_height(xyz_data):
-    h1 = math.sqrt((xyz_data[1][0] - xyz_data[0][0])**2 + (xyz_data[1][1] - xyz_data[0][1])**2)
-    h2 = math.sqrt((xyz_data[2][0] - xyz_data[1][0])**2 + (xyz_data[2][1] - xyz_data[1][1])**2)
+    h1 = math.sqrt((xyz_data[1][0] - xyz_data[0][0])**2 + (xyz_data[1][1] - xyz_data[0][1])**2 + (xyz_data[1][2] - xyz_data[0][2])**2)
+    h2 = math.sqrt((xyz_data[2][0] - xyz_data[1][0])**2 + (xyz_data[2][1] - xyz_data[1][1])**2 + (xyz_data[2][2] - xyz_data[1][2])**2)
     if(h2 > h1):
         height = h2
         width = h1
@@ -84,31 +130,6 @@ def width_height(xyz_data):
         width = h2
     return(width, height)
 
-'''
-def convert_frame(xyz):
-    new_xyz = np.zeros((4,3))
-    new_xyz[:,0] = xyz[:,1]*(-1)
-    new_xyz[:,1] = xyz[:,0]*(-1)
-    new_xyz[:,2] = xyz[:,2]*(-1)
-    return(new_xyz)
-
-def convert_frame(xyz):
-    new_xyz = np.array([[0, 0, 0]]).T
-    trans = tfBuffer.lookup_transform("base_link", "camera_link", rospy.Time(0), rospy.Duration(3))
-    print(trans)
-    camera_quat = Quaternion(trans.transform.rotation.x,
-        trans.transform.rotation.y,
-        trans.transform.rotation.z,
-        trans.transform.rotation.w)
-    camera_trans = Vector3(trans.transform.translation.x,
-        trans.transform.translation.y,
-        trans.transform.translation.z)
-
-    camera_rot = np.asarray(tf.transformations.quaternion_matrix(camera_quat))
-
-    new_xyz = np.dot(camera_rot, xyz) + camera_trans
-    return(new_xyz)
-'''
 def convert_frame(xyz):
     new_xyz = np.array([[0, 0, 0]]).T
     trans = tfBuffer.lookup_transform("base_link", "camera_link", rospy.Time(0), rospy.Duration(3))
@@ -133,18 +154,33 @@ def convert_frame(xyz):
     print(camera_rot.shape)
     print(xyz.shape)
     new_xyz = np.dot(camera_rot, xyz) + camera_trans
-    new_xyz[2, 0] = new_xyz[2, 0] + 0.22
+    new_xyz[0, 0] = new_xyz[0, 0]
+    new_xyz[1, 0] = new_xyz[1, 0]
+    new_xyz[2, 0] = new_xyz[2, 0] + 0.24
     print("new_xyz")
     print(new_xyz)
 
     return(new_xyz)
+
+
+def xyz_center_avg(xyz):
+    xyz_center = np.array([[0., 0., 0.]]).T
+    print("center points")
+    print(xyz[0, :])
+    print(xyz[2, :])
+    xyz_center[0,0] = (xyz[0, 0] + xyz[2, 0])/2.0
+    xyz_center[1,0] = (xyz[0, 1] + xyz[2, 1])/2.0
+    xyz_center[2,0] = (xyz[0, 2] + xyz[2, 2])/2.0
+    print("test data")
+    print(xyz_center)
+    return(xyz_center)
 
 #TODO kD tree for search all points in rectangle
 def callback(data):
     global transform_stamp
 
     global sub
-    #pc = ros_numpy.numpify(data)
+    pc = ros_numpy.numpify(data)
     #np.save("np_arr", pc)
 
 
@@ -166,9 +202,9 @@ def callback(data):
 
     #sub.unregister()
     #print("done")
-    #pic = RGB_pic(pc)
+    pic = RGB_pic(pc)
     #print(data[0][0])
-    pic = RGB_pic(data)
+    #pic = RGB_pic(data)
 
     print("get RGB")
     print(pic.shape)
@@ -184,28 +220,54 @@ def callback(data):
     #cv.imwrite('42.jpg', pic)
     #hsv = cv.cvtColor( pic, cv.COLOR_BGR2HSV )
     #cv.imshow('hsv image', hsv)
-    rect, box, angle = canvas_find(pic)
+    #rect, box, angle, approx = canvas_find(pic)
+
+
+    rect, angle, approx = canvas_find(pic)
+
+    '''
     print("rect info")
     print(rect[0])
     print(rect[1])
     print(rect[2])
     #print(rect[3])
 
-
     center = np.int0(rect[0])
     print(center)
     print(center[1])
-    xyzr_center = data[int(center[1]), int(center[0])]
+    xyzr_center = pc[int(center[1]), int(center[0])]
     xyz_center = np.array([[xyzr_center[0], xyzr_center[1], xyzr_center[2]]]).T
+    print("xyz_center")
     print(xyz_center)
+    print(xyz_center.shape)
     print(rect)
-    #print(box)
+    print("box")
+    print(box)
     #print(box[0][0])
+'''
+    #points = sort_points(box)
+    #print("sort ")
+    #print(points)
 
-    points = sort_points(box)
+    print("sort with Z")
+    points = sort_points_z(approx)
+    print(approx)
+    print("sort Z")
     print(points)
-    xyz = XYZ_points(points)
+
+
+    xyz = XYZ_points(pc, points)
+    print("xyz point \n")
     print(xyz)
+    print(xyz[0])
+    print(xyz[2])
+    '''
+    if xyz_center[0,0] == 0 and xyz_center[1,0] == 0 and xyz_center[2,0] == 0:
+        print("mean center")
+        xyz_center =  xyz_center_avg(xyz)
+    '''
+    xyz_center =  xyz_center_avg(xyz)
+
 
     new_xyz_center = convert_frame(xyz_center)
 
@@ -246,8 +308,8 @@ def callback(data):
     res.p.phi = 0 #rpy[0]
     res.p.theta = 0 #rpy[0]
     res.p.psi = angle + 1.57 #rpy[0]
-    res.width = w
-    res.height = h
+    res.width = round(w, 2)
+    res.height = round(h, 2)
     sub.unregister()
 #    h,w = pic.shape[0], pic.shape[1]
 #    vis2 = cv.cvtColor(pic)
